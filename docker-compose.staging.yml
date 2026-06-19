@@ -1,0 +1,92 @@
+# ============================================================================
+# SparqAI — Staging Docker Compose
+# Usage: docker compose -f docker-compose.staging.yml up --build
+# ============================================================================
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: sparqai_backend_staging
+    ports:
+      - "8000:8000"
+      - "5678:5678"   # debugpy remote debugger
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-staging_user}:${POSTGRES_PASSWORD:-staging_pass}@db-staging:5432/${POSTGRES_DB:-staging_db}
+      - ENVIRONMENT=staging
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - LOG_LEVEL=DEBUG
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - WORKERS=1
+    depends_on:
+      db-staging:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    volumes:
+      - ./backend:/app   # live-reload for staging debugging
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    container_name: sparqai_frontend_staging
+    ports:
+      - "3000:3000"
+      - "9229:9229"   # Node.js inspector debug port
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  db-staging:
+    image: postgres:15-alpine
+    container_name: sparqai_db_staging
+    ports:
+      - "5433:5432"   # different host port to avoid collision with production db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-staging_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-staging_db}
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-staging_user} -d ${POSTGRES_DB:-staging_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Optional: Redis for caching/rate-limiting in staging
+  redis-staging:
+    image: redis:7-alpine
+    container_name: sparqai_redis_staging
+    ports:
+      - "6380:6379"   # different host port to avoid collision
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  staging_postgres_data:

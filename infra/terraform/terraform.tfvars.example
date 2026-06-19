@@ -1,0 +1,28 @@
+# ============================================================================
+# Copy to terraform.tfvars and fill in real values
+# ============================================================================
+
+project_name = "sparqai"
+environment  = "production"
+aws_region   = "us-east-1"
+
+# Domain — you must own this domain
+domain_name   = "sparqai.com"
+api_subdomain = "api"
+app_subdomain = "app"
+
+# Database
+db_name     = "sparqai"
+db_username = "sparqai_admin"
+db_password = "CHANGE_ME_strong_password_here"
+
+# Secrets
+secret_key = "CHANGE_ME_generate_with_python_secrets_token_hex_32"
+
+# Integrations (leave empty if not ready yet)
+hubspot_client_id        = ""
+hubspot_client_secret    = ""
+salesforce_client_id     = ""
+salesforce_client_secret = ""
+google_api_key           = ""
+sentry_dsn               = ""

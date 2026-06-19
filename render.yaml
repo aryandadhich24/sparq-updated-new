@@ -1,0 +1,46 @@
+databases:
+  - name: sparqai-db
+    plan: starter
+    databaseName: roi_db
+    user: sparqai
+
+services:
+  - type: web
+    name: sparqai-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sparqai-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://sparqai-frontend.onrender.com
+      - key: ENVIRONMENT
+        value: production
+      - key: HUBSPOT_CLIENT_ID
+        sync: false
+      - key: HUBSPOT_CLIENT_SECRET
+        sync: false
+      - key: SALESFORCE_CLIENT_ID
+        sync: false
+      - key: SALESFORCE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+    healthCheckPath: /health
+
+  - type: web
+    name: sparqai-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: starter
+    buildArgs:
+      NEXT_PUBLIC_API_URL: https://sparqai-backend.onrender.com/api/v1
