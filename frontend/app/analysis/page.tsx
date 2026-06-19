@@ -82,7 +82,7 @@ function ChartCard({ chart }: { chart: ChartData }) {
   const fmt = (v: number) =>
     v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M`
     : v >= 1_000 ? `${(v / 1_000).toFixed(1)}K`
-    : v?.toFixed ? v.toFixed(1) : v;
+    : v?.toFixed ? v.toFixed(1) : String(v);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
