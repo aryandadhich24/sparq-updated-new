@@ -63,17 +63,14 @@ app = FastAPI(
 # --- Middleware stack (order matters — last added runs first) ---
 
 # CORS — configurable via env
-allowed_origins = os.getenv(
-    "CORS_ORIGINS", ""
-).split(",")
+origins = os.getenv("CORS_ORIGINS", "").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in allowed_origins],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"],
 )
 
 # Rate limiting (60 req/min per IP)
