@@ -43,4 +43,4 @@ services:
     dockerContext: ./frontend
     plan: starter
     buildArgs:
-      NEXT_PUBLIC_API_URL: https://sparqai-backend.onrender.com/api/v1
+      NEXT_PUBLIC_API_URL: https://sparq-backend-7hil.onrender.com
