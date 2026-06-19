@@ -79,12 +79,13 @@ app.add_middleware(
 # Rate limiting (60 req/min per IP)
 app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 
-# Trusted hosts in production
+# Trusted hosts in production — allow custom domain + any *.onrender.com host
 if ENVIRONMENT == "production":
     domain = os.getenv("DOMAIN_NAME", "sparqai.com")
+    extra_hosts = [h.strip() for h in os.getenv("EXTRA_ALLOWED_HOSTS", "").split(",") if h.strip()]
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=[f"api.{domain}", f"app.{domain}", domain],
+        allowed_hosts=[f"api.{domain}", f"app.{domain}", domain, "*.onrender.com"] + extra_hosts,
     )
 
 

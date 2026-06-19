@@ -3,9 +3,9 @@ set -e
 
 echo "Running database migrations..."
 cd /app
-alembic upgrade head
+alembic upgrade head || echo "Warning: migrations failed or skipped, continuing..."
 
-WORKERS="${WORKERS:-2}"
+WORKERS="${WORKERS:-1}"
 echo "Starting FastAPI server with $WORKERS workers..."
 exec uvicorn app.main:app \
   --host 0.0.0.0 \
